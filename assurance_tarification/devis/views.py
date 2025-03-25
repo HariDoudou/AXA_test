@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Devis
 from .serializers import DevisSerializer
+from django.http import JsonResponse
+from .utils import generate_pdf, generate_word
 
 # Vue pour récupérer la liste des devis
 class DevisList(APIView):
@@ -16,6 +18,16 @@ class DevisCreate(APIView):
     def post(self, request):
         serializer = DevisSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            devis = serializer.save()
+            
+            # Générer les fichiers Word et PDF
+            word_file = generate_word(devis)
+            pdf_file = generate_pdf(devis)
+            
+            # Retourner les chemins des fichiers générés
+            return JsonResponse({
+                'devis': serializer.data,
+                'word_file': word_file,
+                'pdf_file': pdf_file
+            }, status=status.HTTP_201_CREATED)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
