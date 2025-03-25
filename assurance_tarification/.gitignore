@@ -1,0 +1,36 @@
+# Fichiers et dossiers à ignorer pour un projet Django
+
+# Fichiers d'environnement virtuel
+venv/
+.env/
+
+# Fichiers Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Fichiers de base de données SQLite
+db.sqlite3
+
+# Dossier de migrations
+*/migrations/*
+
+# Dossier des fichiers statiques collectés
+/static/
+
+# Fichiers de configuration locaux
+*.env
+
+# Fichiers générés par IDE
+.idea/
+.vscode/
+
+# Node modules pour Vue.js
+node_modules/
+
+# Fichiers générés par le build de Vue.js
+/dist/
+
+# Dossiers de logs
+*.log
