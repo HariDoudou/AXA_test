@@ -11,6 +11,10 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "target": "esnext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["vite/client"]
   }
 }

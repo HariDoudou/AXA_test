@@ -12,13 +12,12 @@ def generate_word(devis):
     doc.add_paragraph(f"Tarif proposé : {devis.tarif_propose}€")
     doc.add_paragraph(f"Date de création : {devis.date_creation}")
 
-    file_path = f"devis_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d_%H%M%S')}.docx"
-    doc.save(file_path)
+    file_path = f"Proposition_commerciale_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d:%H%M%S')}.docx"
     return file_path
 
 
 def generate_pdf(devis):
-    file_path = f"devis_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d_%H%M%S')}.pdf"
+    file_path = f"Proposition_commerciale_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d_%H%M%S')}.pdf"
     c = canvas.Canvas(file_path, pagesize=letter)
     
     c.drawString(100, 750, f"Proposition Commerciale")
@@ -27,5 +26,4 @@ def generate_pdf(devis):
     c.drawString(100, 690, f"Tarif proposé : {devis.tarif_propose}€")
     c.drawString(100, 670, f"Date de création : {devis.date_creation}")
     
-    c.save()
     return file_path
