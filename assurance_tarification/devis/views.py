@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Devis
 from .serializers import DevisSerializer
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse
 from .utils import generate_pdf, generate_word
 
 class DevisAction(APIView):
@@ -22,12 +22,17 @@ class DevisAction(APIView):
 class DevisExport(APIView):
     def get(self, request, id):
         try:
+            # Récupérer le type de fichier souhaité (par défaut PDF)
             type = request.query_params.get('type', 'pdf')
+            
+            # Vérifier que le type est supporté (PDF ou Word)
             if type not in ['pdf', 'word']:
-                return JsonResponse({'message': 'Type de fichier non supporté'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Type de fichier non supporté'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Récupérer le devis en fonction de l'ID
             devis = Devis.objects.get(id=id)        
             
-            # Générer les fichiers Word et PDF
+            # Générer le fichier Word ou PDF
             if type == 'word':
                 file_path = generate_word(devis)
                 suffix = '.docx'
@@ -35,7 +40,12 @@ class DevisExport(APIView):
                 file_path = generate_pdf(devis)
                 suffix = '.pdf'
 
-            response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename= f"Proposition_commerciale_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d:%H%M%S')}{suffix}")
+            # Créer le nom du fichier dynamique avec le numéro d'opportunité et la date
+            filename = f"Proposition_commerciale_{devis.num_opportunite}_{devis.date_creation.strftime('%Y%m%d_%H%M%S')}{suffix}"
+            
+            # Retourner la réponse avec le fichier et l'en-tête Content-Disposition
+            response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=filename)
             return response
+
         except Devis.DoesNotExist:
-            return JsonResponse({'message': 'Devis non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Devis non trouvé'}, status=status.HTTP_404_NOT_FOUND)
