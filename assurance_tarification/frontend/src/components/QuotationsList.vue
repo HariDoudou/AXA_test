@@ -4,6 +4,7 @@ import ky from "ky";
 
 const {data} = useQuotes()
 
+<<<<<<< HEAD
 const downloadFile = async(id: number, type: string) => {
   const response = await ky.get(`${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`)
 
@@ -29,6 +30,28 @@ const downloadFile = async(id: number, type: string) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 }
+=======
+const downloadFile = async(id: number, type: string) =>{
+  const response = await ky.get(`${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`)
+  console.log(response.headers)
+
+  const blob = await response.blob()
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+
+  const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]
+  console.log(filename)
+  const fileExtension = type === 'pdf' ? 'pdf' : 'docx'
+  link.setAttribute('download', filename || `devis-${id}.${fileExtension}`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+
+>>>>>>> 23c61299005c76e4390916c8a20a70918a83672e
 </script>
 
 <template>
@@ -51,7 +74,11 @@ const downloadFile = async(id: number, type: string) => {
           <td class="border p-2">
             <button class="px-4 py-2 bg-blue-500 text-white rounded" @click="downloadFile(quote.id, 'pdf')">📄 PDF
             </button>
+<<<<<<< HEAD
             <button class="px-4 py-2 m-4 bg-blue-500 text-white rounded" @click="downloadFile(quote.id, 'word')">📝 Word </button>
+=======
+            <button class="px-4 py-2 bg-blue-500 text-white rounded" @click="downloadFile(quote.id, 'word')">📝 Word </button>
+>>>>>>> 23c61299005c76e4390916c8a20a70918a83672e
           </td>
         </tr>
       </tbody>
