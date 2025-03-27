@@ -1,11 +1,33 @@
 <script setup lang="ts">
 import { useQuotes } from "@/api/quotes";
+import ky from "ky";
 
 const {data} = useQuotes()
+
+const downloadFile = async(id: number, type: string) =>{
+  const response = await ky.get(`${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`)
+  console.log(response.headers)
+
+  const blob = await response.blob()
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+
+  const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]
+  console.log(filename)
+  const fileExtension = type === 'pdf' ? 'pdf' : 'docx'
+  link.setAttribute('download', filename || `devis-${id}.${fileExtension}`)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.URL.revokeObjectURL(url)
+}
+
+
 </script>
 
 <template>
-  <div>
+  <div class="p-4">
     <h2 class="text-2xl font-bold mb-4">Liste des Devis</h2>
     <table class="table-auto w-full border-collapse border border-gray-200">
       <thead>
@@ -21,11 +43,11 @@ const {data} = useQuotes()
           <td class="border p-2">{{ quote.num_opportunite }}</td>
           <td class="border p-2">{{ quote.nom_client }}</td>
           <td class="border p-2">{{ quote.tarif_propose }} €</td>
-          <!-- <td class="border p-2">
-            <a :href="quote.document_pdf" class="text-blue-500" target="_blank">📄 PDF</a>
-            &nbsp;|&nbsp;
-            <a :href="quote.document_word" class="text-blue-500" target="_blank">📝 Word</a>
-          </td> -->
+          <td class="border p-2">
+            <button class="px-4 py-2 bg-blue-500 text-white rounded" @click="downloadFile(quote.id, 'pdf')">📄 PDF
+            </button>
+            <button class="px-4 py-2 bg-blue-500 text-white rounded" @click="downloadFile(quote.id, 'word')">📝 Word </button>
+          </td>
         </tr>
       </tbody>
     </table>
