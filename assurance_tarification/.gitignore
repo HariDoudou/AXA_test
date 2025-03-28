@@ -13,9 +13,6 @@ __pycache__/
 # Fichiers de base de données SQLite
 db.sqlite3
 
-# Dossier de migrations
-*/migrations/*
-
 # Dossier des fichiers statiques collectés
 /static/
 
