@@ -1,1 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+@theme static {
+  --color-blue-axa-350: #e1ecf8;
+  --color-blue-axa-400: #e1ecf8;
+  --color-blue-axa-500: #00008f;
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import QuotationsList from '@/components/QuotationsList.vue'
+  import QuotationsList from '@/components/QuotationsList.vue'
 </script>
 
 <template>

@@ -1,38 +1,30 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useQuotes } from "@/api/quotes";  // Assure-toi que `useQuotes` est bien configuré
-import ky from "ky";  // Assure-toi que ky est installé pour les appels API
+import { RouterLink} from "vue-router";
+import { useQuotes } from "@/api/quotes";
+import ky from "ky";
 
-// Chargement des devis depuis l'API
 const { data, isLoading, error } = useQuotes();
 
-// Fonction pour télécharger un fichier (PDF ou Word)
 const downloadFile = async (id: number, type: string) => {
   try {
     const response = await ky.get(`${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`);
     console.log(response.headers);
 
-    // Créer un blob à partir de la réponse
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = url;
-
-    // Extraire le nom du fichier depuis les en-têtes de la réponse
     const filename = response.headers.get("Content-Disposition")?.split("filename=")[1];
     console.log(filename);
 
-    // Déterminer l'extension si nécessaire
     const fileExtension = type === "pdf" ? "pdf" : "docx";
     link.setAttribute("download", filename || `devis-${id}.${fileExtension}`);
-
-    // Ajouter le lien, le cliquer pour télécharger le fichier, puis le supprimer
     document.body.appendChild(link);
     link.click();
     link.remove();
 
-    // Révoquer l'URL pour libérer la mémoire
     window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error("Erreur lors du téléchargement du fichier", err);
@@ -42,7 +34,15 @@ const downloadFile = async (id: number, type: string) => {
 
 <template>
   <div class="p-4">
-    <h2 class="text-2xl font-bold mb-4">Liste des Devis</h2>
+    <div class="flex flex-row justify-between items-center">
+      <h2 class="text-2xl font-bold mb-4">Liste des Devis</h2>
+      <RouterLink
+        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+        to="/create">
+        ➕ Nouveau devis
+      </RouterLink>
+    </div>
+
 
     <!-- Table pour afficher les devis -->
     <table class="table-auto w-full border-collapse border border-gray-200">
@@ -62,12 +62,12 @@ const downloadFile = async (id: number, type: string) => {
           <td class="border p-2">
             <!-- Boutons pour télécharger le devis en PDF ou Word -->
             <button
-              class="px-4 py-2 bg-blue-500 text-white rounded"
+              class="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
               @click="downloadFile(quote.id, 'pdf')">
               📄 PDF
             </button>
             <button
-              class="px-4 py-2 bg-blue-500 text-white rounded"
+              class="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
               @click="downloadFile(quote.id, 'word')">
               📝 Word
             </button>
@@ -76,22 +76,6 @@ const downloadFile = async (id: number, type: string) => {
       </tbody>
     </table>
 
-    <!-- Bouton pour créer un nouveau devis -->
-    <button
-      class="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-      @click="$emit('new-devis')">
-      ➕ Nouveau devis
-    </button>
+
   </div>
 </template>
-
-<style scoped>
-/* Quelques styles de base */
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #3182ce;
-}
-</style>
