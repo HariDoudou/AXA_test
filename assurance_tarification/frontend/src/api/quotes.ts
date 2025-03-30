@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/vue-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import ky from 'ky'
 
 export interface QuoteSummary {
@@ -43,10 +43,16 @@ interface Adresse {
 }
 
 export const useCreateQuote = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (quote: Quote) => {
       const response = await ky.post(`${import.meta.env.VITE_API_URL}/api/devis/`, { json: quote })
-      return response.json<Quote>()
+      return response.json<QuoteSummary>()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['quotes'],
+      })
     },
   })
 }
