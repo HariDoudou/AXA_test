@@ -154,11 +154,19 @@ const travaux = ref([
       <div class="flex flex-col gap-4">
         <h2 class="text-xl font-bold mb-4">Informations sur les taux</h2>
         <UFormField label="Taux TRC" name="taux_trc">
-          <UInput v-model="state.taux_trc" class="w-full" />
+          <UInput
+            v-model="state.taux_trc"
+            class="w-full"
+            :disabled="!state.type_garantie || state.type_garantie === 'DO'"
+          />
         </UFormField>
 
         <UFormField label="Taux DO" name="taux_do">
-          <UInput v-model="state.taux_do" class="w-full" />
+          <UInput
+            v-model="state.taux_do"
+            class="w-full"
+            :disabled="!state.type_garantie || state.type_garantie === 'TRC'"
+          />
         </UFormField>
         <div class="pt-6">
           <h2 class="text-l font-bold mb-4">Tarifications</h2>
