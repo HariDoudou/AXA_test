@@ -25,14 +25,14 @@ export interface Quote {
   type_garantie: string
   type_bien: string
   type_travaux: string
-  cout_ouvrage: string
+  tarif_propose: number
   presence: boolean
   client_vip: boolean
   rcmo: boolean
   description: string
   adresse: Adresse
-  tarif_trc: string
-  tarif_do: string
+  taux_trc: number
+  taux_do: number
 }
 
 interface Adresse {

@@ -1,48 +1,49 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { RouterLink} from "vue-router";
-import { useQuotes } from "@/api/quotes";
-import ky from "ky";
+import { useQuotes } from '@/api/quotes'
+import dayjs from 'dayjs'
+import ky from 'ky'
 
-const { data, isLoading, error } = useQuotes();
+const { data, isLoading, error } = useQuotes()
 
 const downloadFile = async (id: number, type: string) => {
   try {
-    const response = await ky.get(`${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`);
-    console.log(response.headers);
+    const response = await ky.get(
+      `${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`,
+    )
+    console.log(response.headers)
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
 
-    const link = document.createElement("a");
-    link.href = url;
-    const filename = response.headers.get("Content-Disposition")?.split("filename=")[1];
-    console.log(filename);
+    const link = document.createElement('a')
+    link.href = url
+    const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]
+    console.log(filename)
 
-    const fileExtension = type === "pdf" ? "pdf" : "docx";
-    link.setAttribute("download", filename || `devis-${id}.${fileExtension}`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    const fileExtension = type === 'pdf' ? 'pdf' : 'docx'
+    const devis = data.value?.find((d) => d.id === id)
+    const formatDate = dayjs(devis?.date_creation).format('DD-MM-YYYY:HH:mm')
+    const defaultName = devis
+      ? `Proposition_commerciale_${devis.num_opportunite}_${formatDate}.${fileExtension}`
+      : `Proposition_commerciale.${fileExtension}`
+    link.setAttribute('download', filename || defaultName)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
 
-    window.URL.revokeObjectURL(url);
+    window.URL.revokeObjectURL(url)
   } catch (err) {
-    console.error("Erreur lors du téléchargement du fichier", err);
+    console.error('Erreur lors du téléchargement du fichier', err)
   }
-};
+}
 </script>
 
 <template>
   <div class="p-4">
     <div class="flex flex-row justify-between items-center">
       <h2 class="text-2xl font-bold mb-4">Liste des Devis</h2>
-      <RouterLink
-        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-        to="/create">
-        ➕ Nouveau devis
-      </RouterLink>
+      <UButton to="/create"> ➕ Nouveau devis </UButton>
     </div>
-
 
     <!-- Table pour afficher les devis -->
     <table class="table-auto w-full border-collapse border border-gray-200">
@@ -61,21 +62,20 @@ const downloadFile = async (id: number, type: string) => {
           <td class="border p-2">{{ quote.tarif_propose }} €</td>
           <td class="border p-2">
             <!-- Boutons pour télécharger le devis en PDF ou Word -->
-            <button
-              class="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
-              @click="downloadFile(quote.id, 'pdf')">
-              📄 PDF
-            </button>
-            <button
-              class="px-4 py-2 mx-2 bg-blue-500 text-white rounded"
-              @click="downloadFile(quote.id, 'word')">
-              📝 Word
-            </button>
+            <div class="flex flex-row gap-2">
+              <UTooltip text="Export on pdf file">
+                <UButton icon="i-teenyicons-pdf-outline" @click="downloadFile(quote.id, 'pdf')" />
+              </UTooltip>
+              <UTooltip text="Export on word file">
+                <UButton
+                  icon="i-teenyicons-ms-word-outline"
+                  @click="downloadFile(quote.id, 'word')"
+                />
+              </UTooltip>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
-
-
   </div>
 </template>

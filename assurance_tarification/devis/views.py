@@ -13,6 +13,7 @@ class DevisAction(APIView):
         return Response(serializer.data)
     
     def post(self, request):
+        print('request.data : ', request.data)
         serializer = DevisSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -30,7 +31,7 @@ class DevisExport(APIView):
                 return Response({'message': 'Type de fichier non supporté'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Récupérer le devis en fonction de l'ID
-            devis = Devis.objects.get(id=id)        
+            devis = Devis.objects.select_related('adresse').get(id=id)
             
             # Générer le fichier Word ou PDF
             if type == 'word':
