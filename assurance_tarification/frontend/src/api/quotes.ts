@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import ky from 'ky'
+import * as v from 'valibot'
 
 export interface QuoteSummary {
   id: number
@@ -19,21 +20,33 @@ export const useQuotes = () => {
   })
 }
 
-export interface Quote {
-  num_opportunite: string
-  nom_client: string
-  type_garantie: string
-  type_bien: string
-  type_travaux: string
-  tarif_propose: number
-  presence: boolean
-  client_vip: boolean
-  rcmo: boolean
-  description: string
-  adresse: Adresse
-  taux_trc: number
-  taux_do: number
-}
+export const schema = v.object({
+  adresse: v.object({
+    numero: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]+$/)),
+    rue: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]+$/)),
+    code_postal: v.pipe(
+      v.string(),
+      v.regex(/^[0-9]*$/),
+      v.minLength(5, '5 caractères obligatoires'),
+      v.maxLength(5, '5 caractères obligatoires'),
+    ),
+    ville: v.pipe(v.string(), v.regex(/^[A-Za-z]+$/)),
+  }),
+  num_opportunite: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]+$/)),
+  nom_client: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]+$/)),
+  description: v.pipe(v.string(), v.regex(/^[A-Za-z0-9]+$/)),
+  tarif_propose: v.number(),
+  type_garantie: v.picklist(['', 'DO', 'TRC', 'DO_TRC']),
+  type_bien: v.picklist(['', 'Habitation', 'Hors_habitation']),
+  type_travaux: v.picklist(['', 'Ouvrage_neuf', 'Renovation_legere', 'Renovation_lourde']),
+  presence: v.boolean(),
+  client_vip: v.boolean(),
+  rcmo: v.boolean(),
+  taux_trc: v.number(),
+  taux_do: v.number(),
+})
+
+export type Quote = v.InferOutput<typeof schema>
 
 interface Adresse {
   numero: string

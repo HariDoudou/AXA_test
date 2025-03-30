@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { Quote, useCreateQuote } from '@/api/quotes'
+import { computed, reactive, ref } from 'vue'
+import { Quote, useCreateQuote, schema } from '@/api/quotes'
 import { FormSubmitEvent } from '@nuxt/ui/dist/module'
 import { downloadFile } from '@/utils'
 import router from '@/router'
 
 const mutation = useCreateQuote()
+
 const state = reactive<Quote>({
   num_opportunite: '',
   nom_client: '',
@@ -75,6 +76,21 @@ const travaux = ref([
     value: 'Renovation_lourde',
   },
 ])
+
+const round = (value: number) => {
+  return Math.round(value * 100) / 100
+}
+
+const tarif_trc = computed(() => round(state.taux_trc * state.tarif_propose))
+const tarif_do = computed(() => round(state.taux_do * state.tarif_propose))
+const tarif_duo = computed(() => round(tarif_do.value + tarif_trc.value))
+const prime = computed(() => {
+  if (state.type_garantie === 'TRC') {
+    return tarif_trc.value
+  } else if (state.type_garantie === 'DO') {
+    return tarif_do.value
+  } else return tarif_duo
+})
 </script>
 
 <template>
@@ -174,17 +190,17 @@ const travaux = ref([
           <div class="flex-col gap-4 flex">
             <label>
               Tarif TRC :
-              {{ state.taux_trc * state.tarif_propose }} €
+              {{ tarif_trc }} €
             </label>
-            <label> Tarif DO : {{ state.taux_do * state.tarif_propose }} €</label>
+            <label> Tarif DO : {{ tarif_do }} €</label>
             <label>
               Tarif Duo :
-              {{ state.taux_trc * state.tarif_propose + state.taux_do * state.tarif_propose }}
+              {{ tarif_duo }}
               €</label
             >
             <label class="text-lg pt-14">
               Prime totale :
-              {{ state.taux_trc * state.tarif_propose + state.taux_do * state.tarif_propose }} €
+              {{ prime }} €
             </label>
           </div>
         </div>
