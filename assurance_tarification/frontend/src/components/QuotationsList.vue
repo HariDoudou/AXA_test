@@ -1,41 +1,45 @@
 <script setup lang="ts">
-import { useQuotes } from '@/api/quotes'
-import dayjs from 'dayjs'
-import ky from 'ky'
+import { useQuotes, QuoteSummary } from '@/api/quotes'
+import { TableColumn } from '@nuxt/ui/dist/module'
+import { downloadFile } from '@/utils'
+import { h, resolveComponent } from 'vue'
+import { Column } from '@tanstack/vue-table'
+const UButton = resolveComponent('UButton')
 
 const { data, isLoading, error } = useQuotes()
 
-const downloadFile = async (id: number, type: string) => {
-  try {
-    const response = await ky.get(
-      `${import.meta.env.VITE_API_URL}/api/devis/${id}/export?type=${type}`,
-    )
-    console.log(response.headers)
+const columnSorting = (column: Column<QuoteSummary, unknown>, label: string) => {
+  const isSorted = column.getIsSorted()
 
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]
-    console.log(filename)
-
-    const fileExtension = type === 'pdf' ? 'pdf' : 'docx'
-    const devis = data.value?.find((d) => d.id === id)
-    const formatDate = dayjs(devis?.date_creation).format('DD-MM-YYYY:HH:mm')
-    const defaultName = devis
-      ? `Proposition_commerciale_${devis.num_opportunite}_${formatDate}.${fileExtension}`
-      : `Proposition_commerciale.${fileExtension}`
-    link.setAttribute('download', filename || defaultName)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-
-    window.URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('Erreur lors du téléchargement du fichier', err)
-  }
+  return h(UButton, {
+    color: 'neutral',
+    variant: 'ghost',
+    label,
+    icon: isSorted
+      ? isSorted === 'asc'
+        ? 'i-lucide-arrow-up-narrow-wide'
+        : 'i-lucide-arrow-down-wide-narrow'
+      : 'i-lucide-arrow-up-down',
+    class: '-mx-2.5',
+    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+  })
 }
+
+const columns: TableColumn<QuoteSummary>[] = [
+  {
+    accessorKey: 'num_opportunite',
+    header: ({ column }) => columnSorting(column, `N° d'opportunité`),
+  },
+  {
+    accessorKey: 'nom_client',
+    header: ({ column }) => columnSorting(column, 'Nom du client'),
+  },
+  {
+    accessorKey: 'tarif_propose',
+    header: ({ column }) => columnSorting(column, 'Tarif proposé'),
+  },
+  { id: 'action', header: 'Actions' },
+]
 </script>
 
 <template>
@@ -46,36 +50,23 @@ const downloadFile = async (id: number, type: string) => {
     </div>
 
     <!-- Table pour afficher les devis -->
-    <table class="table-auto w-full border-collapse border border-gray-200">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Numéro d'opportunité</th>
-          <th class="border p-2">Nom du client</th>
-          <th class="border p-2">Tarif proposé</th>
-          <th class="border p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="quote in data" :key="quote.id">
-          <td class="border p-2">{{ quote.num_opportunite }}</td>
-          <td class="border p-2">{{ quote.nom_client }}</td>
-          <td class="border p-2">{{ quote.tarif_propose }} €</td>
-          <td class="border p-2">
-            <!-- Boutons pour télécharger le devis en PDF ou Word -->
-            <div class="flex flex-row gap-2">
-              <UTooltip text="Export on pdf file">
-                <UButton icon="i-teenyicons-pdf-outline" @click="downloadFile(quote.id, 'pdf')" />
-              </UTooltip>
-              <UTooltip text="Export on word file">
-                <UButton
-                  icon="i-teenyicons-ms-word-outline"
-                  @click="downloadFile(quote.id, 'word')"
-                />
-              </UTooltip>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <UTable :data="data" :loading="isLoading" :columns="columns" class="flex-1">
+      <template #action-cell="{ row }">
+        <div class="flex flex-row gap-2">
+          <UTooltip text="Export on pdf file">
+            <UButton
+              icon="i-teenyicons-pdf-outline"
+              @click="downloadFile(row.original.id, 'pdf', data)"
+            />
+          </UTooltip>
+          <UTooltip text="Export on word file">
+            <UButton
+              icon="i-teenyicons-ms-word-outline"
+              @click="downloadFile(row.original.id, 'word', data)"
+            />
+          </UTooltip>
+        </div>
+      </template>
+    </UTable>
   </div>
 </template>
