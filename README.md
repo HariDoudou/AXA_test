@@ -18,3 +18,10 @@ Pour ce test, j'ai utilisé :
 * NuxtUi component
 * Tanstack table
 * Tanstack query
+
+## Lancer le projet
+**Pour le backend**  
+A la racine, faire ``python manage.py runserver ``  
+
+**Pour le frontend**
+Se mettre dans la partie front ``cd frontend`` et faire ``npm run dev``
